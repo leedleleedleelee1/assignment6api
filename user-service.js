@@ -59,13 +59,17 @@ module.exports.checkUser = function (userData) {
         User.findOne({ userName: userData.userName })
             .exec()
             .then(user => {
-                bcrypt.compare(userData.password, user.password).then(res => {
-                    if (res === true) {
-                        resolve(user);
-                    } else {
-                        reject("Incorrect password for user " + userData.userName);
-                    }
-                });
+                if (!user) {
+                    reject("Unable to find user " + userData.userName);
+                } else {
+                    bcrypt.compare(userData.password, user.password).then(res => {
+                        if (res === true) {
+                            resolve(user);
+                        } else {
+                            reject("Incorrect password for user " + userData.userName);
+                        }
+                    });
+                }
             }).catch(err => {
                 reject("Unable to find user " + userData.userName);
             });
@@ -109,7 +113,7 @@ module.exports.addFavourite = function (id, favId) {
             } else {
                 reject(`Unable to update favourites for user with id: ${id}`);
             }
-        });
+        }).catch(err => reject(`Unable to find user with id: ${id}`));
     });
 };
 
@@ -153,7 +157,7 @@ module.exports.addHistory = function (id, historyId) {
             } else {
                 reject(`Unable to update history for user with id: ${id}`);
             }
-        });
+        }).catch(err => reject(`Unable to find user with id: ${id}`));
     });
 };
 
